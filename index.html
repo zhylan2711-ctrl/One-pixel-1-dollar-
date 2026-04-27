@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { background-color: #0b0e14; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        .logo { font-size: 24px; font-weight: bold; color: #27ae60; text-transform: uppercase; margin-bottom: 10px; }
+        .controls { background: #161b22; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #333; text-align: center; }
+        .viewport { width: 320px; height: 320px; border: 2px solid #27ae60; overflow: auto; background: #000; border-radius: 5px; }
+        canvas { display: block; image-rendering: pixelated; transform-origin: 0 0; cursor: crosshair; }
+        .admin-link { margin-top: 20px; color: #8b949e; text-decoration: none; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="logo">The 1M Grid ⚔️</div>
+    <div class="controls">
+        <div>Куплено: <b id="pCount">0</b> пікселів</div>
+        <div style="margin-top:10px; font-size: 12px;">Наближення: <input type="range" id="zoom" min="1" max="20" value="5"></div>
+    </div>
+    <div class="viewport"><canvas id="canvas" width="1000" height="1000"></canvas></div>
+    <a href="admin.html" class="admin-link">⚙️ Налаштування та зв'язок</a>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const zoomInput = document.getElementById('zoom');
+
+        function drawGrid() {
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0,0,1000,1000);
+            const pixels = JSON.parse(localStorage.getItem('saved_pixels')) || [];
+            pixels.forEach(p => { ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 1, 1); });
+            document.getElementById('pCount').innerText = pixels.length;
+        }
+
+        zoomInput.oninput = () => canvas.style.transform = `scale(${zoomInput.value})`;
+        canvas.style.transform = "scale(5)";
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) * (1000 / rect.width));
+            const y = Math.floor((e.clientY - rect.top) * (1000 / rect.height));
+            const color = localStorage.getItem('userPixelColor') || '#27ae60';
+
+            let pixels = JSON.parse(localStorage.getItem('saved_pixels')) || [];
+            pixels.push({x, y, color});
+            localStorage.setItem('saved_pixels', JSON.stringify(pixels));
+            
+            drawGrid();
+            alert(`Піксель [${x}:${y}] додано! Оплатіть $1 адміну.`);
+        });
+
+        drawGrid();
+    </script>
+</body>
+</html>
